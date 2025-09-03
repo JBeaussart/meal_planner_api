@@ -38,6 +38,20 @@ Devise.setup do |config|
   # available as additional gems.
   require 'devise/orm/active_record'
 
+  # JWT configuration for API auth
+  config.jwt do |jwt|
+    # Prefer credentials or ENV; fallback is for dev only
+    jwt.secret = Rails.application.credentials.dig(:devise, :jwt_secret_key) || ENV['DEVISE_JWT_SECRET_KEY'] || 'change-me-in-prod'
+    jwt.dispatch_requests = [
+      ['POST', %r{^/api/v1/users/sign_in$}]
+    ]
+    jwt.revocation_requests = [
+      ['DELETE', %r{^/api/v1/users/sign_out$}]
+    ]
+    # Example expiration (adjust as needed)
+    jwt.expiration_time = 2.weeks.to_i
+  end
+
   # ==> Configuration for any authentication mechanism
   # Configure which keys are used when authenticating a user. The default is
   # just :email. You can configure it to use [:username, :subdomain], so for

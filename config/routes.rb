@@ -6,7 +6,8 @@ Rails.application.routes.draw do
                  defaults: { format: :json },
                  path: '',
                  controllers: {
-                   registrations: 'api/v1/registrations'
+                   registrations: 'api/v1/registrations',
+                   sessions: 'api/v1/sessions'
                  },
                  path_names: {
                    sign_in: 'users/sign_in',
@@ -15,6 +16,7 @@ Rails.application.routes.draw do
                  }
 
       resources :users, only: %i[index show]
+      resources :recipes
     end
   end
 end
