@@ -14,7 +14,8 @@ module Api::V1
     private
 
     def ensure_admin!
-      head :forbidden unless current_user.respond_to?(:admin?) && current_user.admin?
+      user = respond_to?(:current_api_v1_user) ? current_api_v1_user : nil
+      head :forbidden unless user&.respond_to?(:admin?) && user&.admin?
     end
   end
 end

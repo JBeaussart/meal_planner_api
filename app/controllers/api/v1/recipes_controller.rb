@@ -6,7 +6,7 @@ module Api
       before_action :set_recipe, only: %i[show update destroy]
 
       def index
-        recipes = current_user.recipes.order(created_at: :desc)
+        recipes = current_api_v1_user.recipes.order(created_at: :desc)
         render json: RecipeSerializer.new(recipes).serializable_hash
       end
 
@@ -15,7 +15,7 @@ module Api
       end
 
       def create
-        recipe = current_user.recipes.new(recipe_params)
+        recipe = current_api_v1_user.recipes.new(recipe_params)
         if recipe.save
           render json: RecipeSerializer.new(recipe).serializable_hash, status: :created
         else
@@ -39,7 +39,7 @@ module Api
       private
 
       def set_recipe
-        @recipe = current_user.recipes.find(params[:id])
+        @recipe = current_api_v1_user.recipes.find(params[:id])
       end
 
       def recipe_params
