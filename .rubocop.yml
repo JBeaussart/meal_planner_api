@@ -1,0 +1,5 @@
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
+Metrics/MethodLength:
+  Enabled: false
