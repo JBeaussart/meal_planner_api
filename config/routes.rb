@@ -17,6 +17,11 @@ Rails.application.routes.draw do
 
       resources :users, only: %i[index show]
       resources :recipes
+      resources :scheduled_recipes, only: %i[index create update destroy] do
+        collection do
+          delete :clear
+        end
+      end
     end
   end
 end
