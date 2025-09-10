@@ -23,7 +23,12 @@ class RecipeSerializer
   include JSONAPI::Serializer
 
   set_type :recipe
-  attributes :title, :made_by_mom, :taste, :created_at
+  attributes :title, :made_by_mom, :created_at
+
+  # Ensure taste is serialized as the enum integer (0: salt, 1: sugar)
+  attribute :taste do |object|
+    object[:taste]
+  end
 
   attribute :image_url do |object|
     next nil unless object.image.attached?

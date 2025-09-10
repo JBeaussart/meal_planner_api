@@ -11,7 +11,7 @@ module Api
       end
 
       def show
-        render json: RecipeSerializer.new(@recipe).serializable_hash
+        render json: RecipeSerializer.new(@recipe, include: %i[ingredients steps]).serializable_hash
       end
 
       def create
