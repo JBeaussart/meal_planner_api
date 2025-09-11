@@ -22,6 +22,12 @@ Rails.application.routes.draw do
           delete :clear
         end
       end
+
+      # Shopping list (aggregated ingredients for scheduled recipes)
+      get 'shopping_list', to: 'shopping_lists#index'
+      post 'shopping_list/check', to: 'shopping_lists#check'
+      post 'shopping_list', to: 'shopping_lists#create'
+      delete 'shopping_list', to: 'shopping_lists#destroy'
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_03_100000) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_11_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -79,6 +79,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_03_100000) do
     t.index ["user_id"], name: "index_scheduled_recipes_on_user_id"
   end
 
+  create_table "shopping_list_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.string "unit"
+    t.string "normalized_name", null: false
+    t.string "normalized_unit"
+    t.boolean "checked", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "quantity"
+    t.boolean "manual", default: false, null: false
+    t.index ["user_id", "normalized_name", "normalized_unit"], name: "idx_shopping_entries_uniqueness", unique: true
+    t.index ["user_id"], name: "index_shopping_list_entries_on_user_id"
+  end
+
   create_table "steps", force: :cascade do |t|
     t.integer "position"
     t.text "description"
@@ -109,6 +124,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_03_100000) do
   add_foreign_key "recipes", "users"
   add_foreign_key "scheduled_recipes", "recipes"
   add_foreign_key "scheduled_recipes", "users"
+  add_foreign_key "shopping_list_entries", "users"
   add_foreign_key "steps", "categories"
   add_foreign_key "steps", "recipes"
 end
