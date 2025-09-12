@@ -15,7 +15,10 @@ module Api
       end
 
       def create
-        recipe = current_api_v1_user.recipes.new(recipe_params)
+        permitted = recipe_params
+        # Avoid ActiveStorage trying to interpret an arbitrary string as a signed_id
+        permitted = sanitize_image_param(permitted)
+        recipe = current_api_v1_user.recipes.new(permitted)
         if recipe.save
           render json: RecipeSerializer.new(recipe).serializable_hash, status: :created
         else
@@ -24,7 +27,14 @@ module Api
       end
 
       def update
-        if @recipe.update(recipe_params)
+        # Allow removing the current image with a flag
+        if ActiveModel::Type::Boolean.new.cast(params.dig(:recipe, :remove_image)) && @recipe.image.attached?
+          @recipe.image.purge_later
+        end
+
+        permitted = recipe_params
+        permitted = sanitize_image_param(permitted)
+        if @recipe.update(permitted)
           render json: RecipeSerializer.new(@recipe).serializable_hash
         else
           render json: { errors: @recipe.errors.full_messages }, status: :unprocessable_entity
@@ -43,7 +53,25 @@ module Api
       end
 
       def recipe_params
-        params.require(:recipe).permit(:title, :made_by_mom, :taste)
+        params.require(:recipe).permit(
+          :title,
+          :made_by_mom,
+          :taste,
+          :image,
+          ingredients_attributes: %i[id name quantity unit _destroy],
+          steps_attributes: %i[id description position category_id _destroy]
+        )
+      end
+
+      # If image is a non-empty String and not an uploaded file/signed id, drop it.
+      def sanitize_image_param(permitted)
+        img = permitted[:image]
+        if img.is_a?(String) && img.present?
+          # Active Storage signed IDs are typically base64-like and long; we ignore unexpected strings
+          permitted = permitted.dup
+          permitted.delete(:image)
+        end
+        permitted
       end
     end
   end
