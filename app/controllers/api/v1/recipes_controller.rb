@@ -6,7 +6,17 @@ module Api
       before_action :set_recipe, only: %i[show update destroy]
 
       def index
-        recipes = current_api_v1_user.recipes.order(created_at: :desc)
+        # Eager-load ingredients so serializer can expose ingredient_names without N+1
+        recipes = current_api_v1_user.recipes.includes(:ingredients).order(created_at: :desc)
+
+        # Optional server-side search on title or ingredient name
+        if params[:q].present?
+          q = "%#{params[:q].to_s.strip}%"
+          recipes = recipes
+                    .left_joins(:ingredients)
+                    .where('LOWER(recipes.title) LIKE LOWER(?) OR LOWER(ingredients.name) LIKE LOWER(?)', q, q)
+                    .distinct
+        end
         render json: RecipeSerializer.new(recipes).serializable_hash
       end
 

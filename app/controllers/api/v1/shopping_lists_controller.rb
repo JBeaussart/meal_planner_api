@@ -7,8 +7,8 @@ module Api
       # Aggregates ingredients across the user's scheduled recipes
       def index
         scheduled = current_api_v1_user
-                      .scheduled_recipes
-                      .includes(recipe: :ingredients)
+                    .scheduled_recipes
+                    .includes(recipe: :ingredients)
 
         grouped = {}
 
@@ -38,20 +38,20 @@ module Api
           if grouped[key]
             if entry.quantity.present?
               grouped[key][:quantity] = (grouped[key][:quantity] || 0) + entry.quantity.to_i
-              grouped[key][:all_nil] = false if entry.quantity.to_i > 0
+              grouped[key][:all_nil] = false if entry.quantity.to_i.positive?
             end
           else
             grouped[key] = {
               name: entry.name.to_s,
               unit: entry.unit,
               quantity: entry.quantity.to_i,
-              all_nil: entry.quantity.blank? || entry.quantity.to_i == 0
+              all_nil: entry.quantity.blank? || entry.quantity.to_i.zero?
             }
           end
         end
 
         items = grouped.map do |(norm_name, norm_unit), data|
-          qty = data[:all_nil] || data[:quantity].to_i == 0 ? nil : data[:quantity]
+          qty = data[:all_nil] || data[:quantity].to_i.zero? ? nil : data[:quantity]
           entry_for_key = entries_by_key[[norm_name, norm_unit]]
           checked = entry_for_key&.checked || false
           deletable = entry_for_key&.manual ? true : false
@@ -77,9 +77,7 @@ module Api
         name = params[:name].to_s
         unit = params.key?(:unit) ? params[:unit] : nil
         checked = ActiveModel::Type::Boolean.new.cast(params[:checked])
-        if name.blank?
-          return render json: { errors: ['name is required'] }, status: :unprocessable_entity
-        end
+        return render json: { errors: ['name is required'] }, status: :unprocessable_entity if name.blank?
 
         norm_name = ShoppingListEntry.normalize_value(name)
         norm_unit = ShoppingListEntry.normalize_value(unit)
@@ -106,9 +104,7 @@ module Api
         name = params[:name].to_s
         unit = params.key?(:unit) ? params[:unit] : nil
         quantity = params[:quantity]
-        if name.blank?
-          return render json: { errors: ['name is required'] }, status: :unprocessable_entity
-        end
+        return render json: { errors: ['name is required'] }, status: :unprocessable_entity if name.blank?
 
         norm_name = ShoppingListEntry.normalize_value(name)
         norm_unit = ShoppingListEntry.normalize_value(unit)
@@ -144,9 +140,7 @@ module Api
       def destroy
         name = params[:name].to_s
         unit = params.key?(:unit) ? params[:unit] : nil
-        if name.blank?
-          return render json: { errors: ['name is required'] }, status: :unprocessable_entity
-        end
+        return render json: { errors: ['name is required'] }, status: :unprocessable_entity if name.blank?
 
         norm_name = ShoppingListEntry.normalize_value(name)
         norm_unit = ShoppingListEntry.normalize_value(unit)

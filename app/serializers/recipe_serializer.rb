@@ -25,6 +25,13 @@ class RecipeSerializer
   set_type :recipe
   attributes :title, :made_by_mom, :created_at
 
+  # Add denormalized ingredient names for lightweight client-side search
+  attribute :ingredient_names do |object|
+    # Use loaded association if available to avoid N+1; otherwise a small query per recipe
+    # We keep it minimal (names only) to reduce payload size
+    object.ingredients.map(&:name)
+  end
+
   # Ensure taste is serialized as the enum integer (0: salt, 1: sugar)
   attribute :taste do |object|
     object[:taste]
